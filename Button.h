@@ -2,11 +2,6 @@
 Rafael González - 07/05/2015
 */
 
-/*
-Nota: se da por hecho que +5V implican que el botón está presionado y 0V.
-Se consigue con una resistencia PULL-UP.
-*/
-
 #ifndef BUTTON_H
 #define BUTTON_H
 

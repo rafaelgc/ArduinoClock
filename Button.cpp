@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "Arduino.h"
+
 Button::Button(int pin, int minDelay){
   lastState = false;
   this->minDelay = minDelay;
