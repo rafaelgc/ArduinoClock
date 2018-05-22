@@ -9,7 +9,7 @@ class Mode{
   private:
   int currentMode;
   public:
-  enum {CLOCK, SET_HOUR, SET_MINUTE, SET_ALARM_HOUR, SET_ALARM_MINUTE};
+  enum {CLOCK, SET_MINUTE, SET_HOUR, SET_ALARM_MINUTE, SET_ALARM_HOUR};
   
   Mode();
   void operator=(int mode);

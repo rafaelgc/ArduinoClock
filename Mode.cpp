@@ -10,7 +10,7 @@ void Mode::operator=(int mode){
 
 
 void Mode::operator++(){
-  if (currentMode==SET_ALARM_MINUTE){
+  if (currentMode==SET_ALARM_HOUR){
     currentMode = CLOCK;
   }
   else{

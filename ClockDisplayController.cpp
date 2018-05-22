@@ -4,14 +4,18 @@
 #include "TwoDigitNumber.h"
 #include "Arduino.h"
 
-ClockDisplayController::ClockDisplayController(int lessSignificantPin){
-  pinMode(lessSignificantPin, OUTPUT);
-  pinMode(lessSignificantPin+1, OUTPUT);
-  pinMode(lessSignificantPin+2, OUTPUT);
-  pinMode(lessSignificantPin+3, OUTPUT);
+ClockDisplayController::ClockDisplayController(int mostSignificantHourPin, int lessSignificantHourPin, int mostSignificantMinutePin, int lessSignificantMinutePin) {
+  pinMode(mostSignificantHourPin, OUTPUT);
+  pinMode(lessSignificantHourPin, OUTPUT);
+  pinMode(mostSignificantMinutePin, OUTPUT);
+  pinMode(lessSignificantMinutePin, OUTPUT);
+
+  this->mostSignificantHourPin = mostSignificantHourPin;
+  this->lessSignificantHourPin = lessSignificantHourPin;
+  this->mostSignificantMinutePin = mostSignificantMinutePin;
+  this->lessSignificantMinutePin = lessSignificantMinutePin;
   
-  this->lessSignificantPin = lessSignificantPin;
-  currentPin = lessSignificantPin;
+  currentPin = lessSignificantMinutePin;
   
   setMode(NORMAL);
 }
@@ -26,25 +30,29 @@ void ClockDisplayController::update(const TwoDigitNumber &hour, const TwoDigitNu
     //en corte, por lo que se apagará el display.
     digitalWrite(currentPin, LOW);
 
-    currentPin++;
-    if (currentPin>=lessSignificantPin+4){
-      currentPin = lessSignificantPin;
-    }
+    currentPin = nextPin();
 
     //Se cambia el número que representa el decodificador.
     updateNumber(hour, minute, decoder);
 
     //Por último, se enciende el transistor del siguiente display.
-    if ((currentPin==lessSignificantPin+2 || currentPin==lessSignificantPin+3) && hourOn){
+    if ((currentPin==mostSignificantHourPin || currentPin==lessSignificantHourPin) && hourOn){
       digitalWrite(currentPin,HIGH);
     }
-    else if ((currentPin==lessSignificantPin || currentPin==lessSignificantPin+1) && minuteOn){
+    else if ((currentPin==mostSignificantMinutePin || currentPin==lessSignificantMinutePin) && minuteOn){
       digitalWrite(currentPin,HIGH);
     }
 
     displayChrono.restart();
 
   }
+}
+
+int ClockDisplayController::nextPin() {
+  if (currentPin == lessSignificantMinutePin) return mostSignificantMinutePin;
+  if (currentPin == mostSignificantMinutePin) return lessSignificantHourPin;
+  if (currentPin == lessSignificantHourPin)   return mostSignificantHourPin;
+  if (currentPin == mostSignificantHourPin)   return lessSignificantMinutePin;
 }
 
 inline void ClockDisplayController::manageBlink(){
@@ -71,16 +79,16 @@ inline void ClockDisplayController::manageBlink(){
 }
 
 inline void ClockDisplayController::updateNumber(const TwoDigitNumber &hour, const TwoDigitNumber &minute, BCDDecoder &decoder){
-  if (currentPin==lessSignificantPin){
+  if (currentPin==lessSignificantMinutePin){
     decoder.setNumber(minute.getLSD());
   }
-  else if (currentPin==lessSignificantPin+1){
+  else if (currentPin==mostSignificantMinutePin){
     decoder.setNumber(minute.getMSD());
   }
-  else if (currentPin==lessSignificantPin+2){
+  else if (currentPin==lessSignificantHourPin){
     decoder.setNumber(hour.getLSD());
   }
-  else if (currentPin==lessSignificantPin+3){
+  else if (currentPin==mostSignificantHourPin){
     decoder.setNumber(hour.getMSD());
   }
 }
