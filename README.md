@@ -1,6 +1,6 @@
-#ArduinoClock
+# ArduinoClock
 
-##Components
+## Components
 
 - 1x Arduino board (Uno, Nano)
 - 8x 330Ω resistors.
@@ -12,12 +12,12 @@
 - 1x CD4511BE BCD-to-7-segment decoder.
 - 1x buzzer.
 
-##Scheme
+## Scheme
 ![](scheme.png)
-##Videos
-###2018
+## Videos
+### 2018
 Running in an Arduino Nano, it's build on a bakelite board. Instead of using four different 7-segments display I use a four digit 7-segment display:
 
-###2015
+### 2015
 Running in an Arduino One, unlike the 2018 version, it has an additional led that is on when the alarm is on:
 [Youtube video](https://www.youtube.com/watch?v=3Vp3RKkvZ58)
