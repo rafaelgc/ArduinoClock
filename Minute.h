@@ -7,7 +7,7 @@ Rafael González - 09/05/2015
 
 #include "TwoDigitNumber.h"
 
-class Minute : public TwoDigitNumber{
+class Minute : public TwoDigitNumber {
   public:
   Minute();
 };

@@ -12,8 +12,8 @@ class BCDDecoder{
   
   public:
   /*
-  pinA -> LSB (bit menos significativo)
-  pinD -> MSB (bit más significativo)
+  pinA -> LSB
+  pinD -> MSB
   */
   BCDDecoder(int pinA, int pinB, int pinC, int pinD);
   void setNumber(int number);

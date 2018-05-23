@@ -1,5 +1,5 @@
 #include "Hour.h"
 
-Hour::Hour() : TwoDigitNumber(23){
+Hour::Hour() : TwoDigitNumber(23) {
 }
 

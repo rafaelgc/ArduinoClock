@@ -24,18 +24,17 @@ void ClockDisplayController::update(const TwoDigitNumber &hour, const TwoDigitNu
   
   manageBlink();
 
-  //Cada 2ms se cambia el display que se activa.
+  // We change display on every 2ms.
   if (displayChrono.getElapsedTime()>2){
-    //El transistor que estuvo conduciendo hasta ahora pasará a estar
-    //en corte, por lo que se apagará el display.
+    // The transistor that was conducting now is in cut-off.
     digitalWrite(currentPin, LOW);
 
     currentPin = nextPin();
 
-    //Se cambia el número que representa el decodificador.
+    // Update the visible number.
     updateNumber(hour, minute, decoder);
 
-    //Por último, se enciende el transistor del siguiente display.
+    // Turn the next transistor on.
     if ((currentPin==mostSignificantHourPin || currentPin==lessSignificantHourPin) && hourOn){
       digitalWrite(currentPin,HIGH);
     }
@@ -56,22 +55,22 @@ int ClockDisplayController::nextPin() {
 }
 
 inline void ClockDisplayController::manageBlink(){
-  if (mode==HOUR_BLINK){
-    if (hourOn==false && blinkChrono.getElapsedTime()>300){
+  if (mode == HOUR_BLINK){
+    if (hourOn == false && blinkChrono.getElapsedTime() > 300){
       hourOn = true;
       blinkChrono.restart();
     }
-    else if (hourOn==true && blinkChrono.getElapsedTime()>300){
+    else if (hourOn == true && blinkChrono.getElapsedTime() > 300){
       hourOn = false;
       blinkChrono.restart();
     }
   }
-  else if (mode==MINUTE_BLINK){
-    if (minuteOn==false && blinkChrono.getElapsedTime()>300){
+  else if (mode == MINUTE_BLINK){
+    if (minuteOn == false && blinkChrono.getElapsedTime() > 300){
       minuteOn = true;
       blinkChrono.restart();
     }
-    else if (minuteOn==true && blinkChrono.getElapsedTime()>300){
+    else if (minuteOn == true && blinkChrono.getElapsedTime() > 300){
       minuteOn = false;
       blinkChrono.restart();
     }

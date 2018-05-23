@@ -41,8 +41,8 @@ const int ALARM_LED = 13;
 const int SECONDS_LED = 12;
 
 // Pick the alarm melody:
-#define BASIC_MELODY
-//#define MARIO_MELODY
+//#define BASIC_MELODY
+#define MARIO_MELODY
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -210,12 +210,7 @@ inline void manageInput(){
         alarmOn=!alarmOn;
 
         // Give some feedback.
-        if (alarmOn) {
-          tone(BUZZER, 600, 50);
-        }
-        else {
-          tone(BUZZER, 400, 50);
-        }
+        tone(BUZZER, alarmOn ? 600 : 400, 50);
         
         #ifdef ENABLE_ALARM_LED
         if (alarmOn) { digitalWrite(ALARM_LED, HIGH); }

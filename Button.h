@@ -14,15 +14,14 @@ class Button{
   
   public:
   Button(int pin, int minDelay = 0);
-  
-  /*Se debe llamar desde el bucle de la aplicación.
-  Devuelve true si el estado ha cambiado.
-  */
+
+  /**
+   * This method should be called from the loop().
+   * It returns true when the state of the button
+   * has changed.
+   */
   bool update();
-  /*
-  Devuelve PRESSED si el botón está presionado.
-  Devuelve UNPRESSED si no está presionado.
-  */
+  
   bool isPressed();
 };
 

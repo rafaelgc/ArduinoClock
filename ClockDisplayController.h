@@ -11,7 +11,6 @@ private:
 	int mostSignificantHourPin, lessSignificantHourPin, mostSignificantMinutePin, lessSignificantMinutePin, currentPin;
 	Chrono displayChrono, blinkChrono;
 
-	//El estado se almacena en un char para ahorrar memoria.
 	char mode;
 
 	bool hourOn, minuteOn;

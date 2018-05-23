@@ -7,17 +7,15 @@ Rafael González - 09/05/2015
 
 /*Interface*/
 
-class TwoDigitNumber{
+class TwoDigitNumber {
   private:
   int mostSignificantDigit, lessSignificantDigit;
   int maxNumber;
   public:
   TwoDigitNumber(int maxNumber = 99);
 
-  //Devuelve el dígito más significativo.
-  virtual int getMSD() const;
-  //Devuelve el dígito menos significativo.
-  virtual int getLSD() const;
+  virtual int getMSD() const; // Most significand digit.
+  virtual int getLSD() const; // Less significant digit.
   
   virtual bool add(int amount);
   virtual void set(int number);

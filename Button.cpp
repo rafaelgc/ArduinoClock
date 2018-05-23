@@ -10,13 +10,13 @@ Button::Button(int pin, int minDelay){
 }
 
 bool Button::update(){
-  //Para que cambie el estado debe pasar un cierto tiempo,
-  //minDelay.
+  // In order to avoid noise we should wait some milliseconds
+  // to change the state.
   if ((unsigned long)(millis() - previousMillis) >= minDelay){
     
     bool currState = digitalRead(pin);
     
-    if (currState!=lastState){
+    if (currState != lastState){
       lastState = currState;
       previousMillis = millis();
       return true;

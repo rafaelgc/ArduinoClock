@@ -6,7 +6,7 @@ Rafael González - 09/05/2015
 #define HOUR_H
 #include "TwoDigitNumber.h"
 
-class Hour : public TwoDigitNumber{
+class Hour : public TwoDigitNumber {
   public:
   Hour();
 };

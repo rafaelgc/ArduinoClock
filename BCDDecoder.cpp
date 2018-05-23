@@ -20,67 +20,11 @@ void BCDDecoder::setNumber(int number){
   
   number = number<0?0:number;
   number = number>9?number%10:number;
-  
-  if (number==0){
-    digitalWrite(pinA,LOW);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==1){
-    digitalWrite(pinA,HIGH);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==2){
-    digitalWrite(pinA,LOW);
-    digitalWrite(pinB,HIGH);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==3){
-    digitalWrite(pinA,HIGH);
-    digitalWrite(pinB,HIGH);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==4){
-    digitalWrite(pinA,LOW);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,HIGH);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==5){
-    digitalWrite(pinA,HIGH);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,HIGH);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==6){
-    digitalWrite(pinA,LOW);
-    digitalWrite(pinB,HIGH);
-    digitalWrite(pinC,HIGH);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==7){
-    digitalWrite(pinA,HIGH);
-    digitalWrite(pinB,HIGH);
-    digitalWrite(pinC,HIGH);
-    digitalWrite(pinD,LOW);
-  }
-  else if (number==8){
-    digitalWrite(pinA,LOW);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,HIGH);
-  }
-  else if (number==9){
-    digitalWrite(pinA,HIGH);
-    digitalWrite(pinB,LOW);
-    digitalWrite(pinC,LOW);
-    digitalWrite(pinD,HIGH);
-  }
+
+  digitalWrite(pinA, number & 1);
+  digitalWrite(pinB, number & 2);
+  digitalWrite(pinC, number & 4);
+  digitalWrite(pinD, number & 8);
 }
 
 inline int BCDDecoder::getNumber(){
