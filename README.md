@@ -23,8 +23,12 @@ There is a configuration section in the main file (`ArduinoClock.ino`). Before l
 
 ## Videos
 ### 2018
-Running in an Arduino Mini Pro, it's build on a bakelite board. Instead of using four different 7-segments display I use a four digit 7-segment display: [Youtube video](https://youtu.be/82Oy63iAcYY)
+Running on an Arduino Mini Pro, it's build on a bakelite board. Instead of using four different 7-segments display I use a four digit 7-segment display: [Youtube video](https://youtu.be/82Oy63iAcYY)
 
 ### 2015
-Running in an Arduino One, unlike the 2018 version, it has an additional led that is on when the alarm is on:
+Running on an Arduino One, unlike the 2018 version, it has an additional led that is on when the alarm is on:
 [Youtube video](https://www.youtube.com/watch?v=3Vp3RKkvZ58)
+
+## License
+
+ArduinoClock is licensed under the terms of the MIT License. Please, read the LICENSE file.
