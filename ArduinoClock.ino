@@ -6,7 +6,7 @@
 #include "Minute.h"
 #include "Mode.h"
 #include "ClockDisplayController.h"
-#include "Tone.h"
+#include "TonePlayer.h"
 
 /////////////////////////////////////////////////////
 ///                CONFIGURATION                  ///
@@ -27,7 +27,7 @@ const int LESS_SIGNIFICANT_HOUR_DIGIT_TRANSISTOR = 6;
 
 // We use four bits to represent a digit. Those bits are
 // outputted to the decoder and then sent to the displays.
-const int PIN_A = 2;
+const int PIN_A = 2; // less significant bit.
 const int PIN_B = 3;
 const int PIN_C = 4;
 const int PIN_D = 5;
@@ -38,35 +38,76 @@ const int ALARM_LED = 13;
 
 // Uncomment next line to make a led blink every second.
 //#define ENABLE_SECONDS_BLINK
-const int POINT_LED = 12;
+const int SECONDS_LED = 12;
+
+// Pick the alarm melody:
+#define BASIC_MELODY
+//#define MARIO_MELODY
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////
+///                  MELODIES                     ///
+/////////////////////////////////////////////////////
+
+#ifdef MARIO_MELODY
+const int MELODY_SIZE = 156;
+const short NOTES[MELODY_SIZE] =    {660,660,660,510,660,770,380,510,380,320,440,480,450,430,380,660,760,860,700,760,660,520,580,480,510,380,320,440,480,450,430,380,660,760,860,700,760,660,520,580,480,500,760,720,680,620,650,380,430,500,430,500,570,500,760,720,680,620,650,1020,1020,1020,380,500,760,720,680,620,650,380,430,500,430,500,570,585,550,500,380,500,500,500,500,760,720,680,620,650,380,430,500,430,500,570,500,760,720,680,620,650,1020,1020,1020,380,500,760,720,680,620,650,380,430,500,430,500,570,585,550,500,380,500,500,500,500,500,500,500,580,660,500,430,380,500,500,500,500,580,660,870,760,500,500,500,500,580,660,500,430,380,660,660,660,510,660,770,380};
+const short DURATION[MELODY_SIZE] = {83,83,83,83,83,83,83,83,83,83,83,67,83,83,83,67,42,83,67,42,67,67,67,67,83,83,83,83,67,83,83,83,67,42,83,67,42,67,67,67,67,83,83,83,83,125,125,83,83,83,83,83,83,83,83,83,83,125,167,67,67,67,83,83,83,83,83,125,125,83,83,83,83,83,83,83,83,83,83,83,83,83,83,83,83,83,125,125,83,83,83,83,83,83,83,83,83,83,125,167,67,67,67,83,83,83,83,83,125,125,83,83,83,83,83,83,83,83,83,83,83,83,83,50,67,50,67,67,67,67,67,67,50,67,50,67,67,67,67,67,50,67,50,67,67,67,67,67,67,83,83,83,83,83,83,83};
+const short SILENCE[MELODY_SIZE]  = {125,250,250,83,250,458,479,375,333,417,250,275,125,250,167,167,125,250,125,292,250,125,125,417,375,333,417,250,275,125,250,167,167,125,250,125,292,250,125,125,417,250,83,125,125,250,250,125,125,250,125,83,183,250,83,125,125,250,250,250,125,250,250,250,83,125,125,250,250,125,125,250,125,83,350,375,350,300,250,250,125,250,250,83,125,125,250,250,125,125,250,125,83,183,250,83,125,125,250,250,250,125,250,250,250,83,125,125,250,250,125,125,250,125,83,350,375,350,300,250,250,125,250,125,250,292,125,292,125,250,125,500,125,250,292,125,125,458,271,500,125,250,292,125,292,125,250,125,500,125,250,250,83,250,458,479};
+#endif
+
+#ifdef BASIC_MELODY
+const short MELODY_SIZE = 4;
+const short NOTES[MELODY_SIZE] = {950, 950, 950, 950};
+const short DURATION[MELODY_SIZE] = {100, 100, 100, 100};
+const short SILENCE[MELODY_SIZE] =  {50, 50, 50, 600};
+#endif
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
 
 bool alarmOn = false;
 
-Tone alarmTone(BUZZER); //Controla el tono de la alarma.
+// TonePlayer controls the alarm melody playback.
+TonePlayer alarmPlayer(BUZZER);
 
+// ClockDisplayController controls the transistors.
 ClockDisplayController clockDisplayController(
                                               MOST_SIGNIFICANT_HOUR_DIGIT_TRANSISTOR,
                                               LESS_SIGNIFICANT_HOUR_DIGIT_TRANSISTOR,
                                               MOST_SIGNIFICANT_MINUTE_DIGIT_TRANSISTOR,
                                               LESS_SIGNIFICANT_MINUTE_DIGIT_TRANSISTOR);
 
-BCDDecoder decoder(PIN_A, PIN_B, PIN_C, PIN_D); //Sirve para seleccionar el número que mostrará el display activo.
+// BCDDecoder allows us to select which number will be outputted to the
+// decoder.
+BCDDecoder decoder(PIN_A, PIN_B, PIN_C, PIN_D);
+
+// We have three different buttons.
 Button modeButton(MODE_BUTTON,100), incrementButton(INCREMENT_BUTTON,100), alarmButton(ALARM_BUTTON,100);
 
 
 Hour hour, alarmHour;
 Minute minute, alarmMinute;
 
-Hour *visibleHour = &hour; //Puntero a la hora que se muestra en el display.
+// Depending on the mode of the clock we may be interested in showing the
+// clock hour/minute or the alarm hour/minute:
+// ledChronoer to the current visible hour.
+Hour *visibleHour = &hour;
+// ledChronoer to the current visible minute.
 Minute *visibleMinute = &minute;
 
-Mode mode; //Para gestionar los estados en los que está el reloj: NORMAL, modificar HORA/MINUTO, etc.
+// This contains the current mode.
+Mode mode;
 
-Chrono clockChrono; //Controla el paso del tiempo para ir aumentando los minutos del reloj.
-Chrono point; //Controla el parpadeo del led que marca los segundos.
+// clockChrono controls the passage of time so that the seconds
+// counter gets incremented every second.
+Chrono clockChrono;
+// ledChrono is used to control the led that blinks every second (if enabled).
+Chrono ledChrono; //Controla el parpadeo del led que marca los segundos.
 
 inline void manageAlarm();
 inline void manageInput();
@@ -82,9 +123,8 @@ void setup() {
   #endif
 
   #ifdef ENABLE_SECONDS_BLINK
-  pinMode(POINT_LED, OUTPUT);
+  pinMode(SECONDS_LED, OUTPUT);
   #endif
-  
 }
 
 void loop() {
@@ -100,28 +140,32 @@ void loop() {
 }
 
 inline void manageInput(){
+  // button.update() returns true when the state of the button
+  // changes (from pressed to released or vice versa)
   if (modeButton.update()){
-    //El método update() devuelve true sólo cuando el botón ha cambiado de estado.
-
+    
     if (modeButton.isPressed()){
       tone(BUZZER, 200, 50);
-      ++mode; //Se cambia el modo. (El operador ++ está sobrecargado).
+      // Go to the next mode.
+      ++mode;
       
-      //Si estamos en modo alarma...
+      // If we are in clock-mode.
       if (mode.isClockVisible()){
-        //Cambiamos al modo reloj.
+        // We make sure that the visible hour is the clock hour.
         visibleHour = &hour;
         visibleMinute = &minute;
       }
-      //Y si estamos en modo reloj...
+
+      // If we are in alarm-mode.
       else if (mode.isAlarmVisible()){
-        //Cambiamos al modo alarma.
+        // We make sure that the visible hour is the alarm hour.
         visibleHour = &alarmHour;
         visibleMinute = &alarmMinute;
       }
 
-      //Dependiendo de si estamos o no editando la hora o el minuto, se
-      //le indica al clockDisplayController que haga parpadear los displays.
+      // If we are editing the hour/minute we have to tell
+      // the ClockDisplayController. It will handle the display
+      // blink.
       if (mode.isEditingHour()){
         clockDisplayController.setMode(ClockDisplayController::HOUR_BLINK);
       }
@@ -156,18 +200,16 @@ inline void manageInput(){
   
   if (alarmButton.update()){
     if (alarmButton.isPressed()){
+      // We use the alarm button to:
+      // - Enabling/disabling the alarm.
+      // - Stop the melody playback (if it's being played).
 
-      /*
-      El botón de alarma sirve para cambiar el estado de la alarma
-      (encendido/apagado) y, si está sonando la alarma también sirve
-      para apagarla.
-      */
-
-      //Si la alarma no está sonando...
-      if (!alarmTone.isPlaying()){
-        //Se cambia su estado.
+      // If it the melody is not being played...
+      if (!alarmPlayer.isPlaying()){
+        // Enable/disale the alarm.
         alarmOn=!alarmOn;
 
+        // Give some feedback.
         if (alarmOn) {
           tone(BUZZER, 600, 50);
         }
@@ -175,7 +217,6 @@ inline void manageInput(){
           tone(BUZZER, 400, 50);
         }
         
-        //Y se encienden/apagan el led que lo indica.
         #ifdef ENABLE_ALARM_LED
         if (alarmOn) { digitalWrite(ALARM_LED, HIGH); }
         else { digitalWrite(ALARM_LED, LOW); }
@@ -183,33 +224,32 @@ inline void manageInput(){
         
       }
       else{
-        //Si la alarma está sonando, se para.
-        alarmTone.stop();
+        // Stop the alarm melody.
+        alarmPlayer.stop();
       }
     }
   }
 }
 
 inline void refreshDisplays(){
-  clockDisplayController.update(*visibleHour,*visibleMinute,decoder);
+  clockDisplayController.update(*visibleHour, *visibleMinute, decoder);
 
   #ifdef ENABLE_SECONDS_BLINK
-  //PARPADEO DEL LED QUE MARCA LOS SEGUNDOS:
-  if (point.getElapsedTime()<1000){
-    digitalWrite(POINT_LED,HIGH);
+  if (ledChrono.getElapsedTime()<1000){
+    digitalWrite(SECONDS_LED,HIGH);
   }
-  else if (point.getElapsedTime()<2000){
-    digitalWrite(POINT_LED,LOW);
+  else if (ledChrono.getElapsedTime()<2000){
+    digitalWrite(SECONDS_LED,LOW);
   }
   else{
-    point.restart();
+    ledChrono.restart();
   }
   #endif
 }
 
 inline void manageAlarm(){
 
-  alarmTone.update();
+  alarmPlayer.update();
   
 }
 
@@ -221,8 +261,8 @@ inline void updateTime(){
     }
 
 
-    if (alarmOn && hour==alarmHour && minute==alarmMinute && !alarmTone.isPlaying()){
-      alarmTone.play(true);
+    if (alarmOn && hour==alarmHour && minute==alarmMinute && !alarmPlayer.isPlaying()){
+      alarmPlayer.play(MELODY_SIZE, NOTES, DURATION, SILENCE, true);
     }
 
     clockChrono.restart();
