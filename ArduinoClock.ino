@@ -13,8 +13,18 @@
 /////////////////////////////////////////////////////
 
 const int BUZZER = 10;
+
+// The mode button allows us to switch between different
+// states: normal, editing hour/minute, editing alarm hour/minute.
 const int MODE_BUTTON = 11;
-const int INCREMENT_BUTTON = 12;
+
+// The action button is used for:
+// 1. Increasing the hour/minute if you are editing.
+// 2. Turn the displays off if you press it for a while.
+const int ACTION_BUTTON = 12;
+
+// The alarm button allows us you to activate/deactivate the
+// alarm and stop the melody when the alarm is triggered.
 const int ALARM_BUTTON = 13;
 
 // Four transistors controls which digit is visible
@@ -41,8 +51,13 @@ const int ALARM_LED = 13;
 const int SECONDS_LED = 12;
 
 // Pick the alarm melody:
-//#define BASIC_MELODY
-#define MARIO_MELODY
+#define BASIC_MELODY
+//#define MARIO_MELODY
+
+// If you want to turn the displays on/off you'll
+// have to keep the action button pressed for
+// SWITCH_DISPLAYS_ON_OFF_MILLIS milliseconds.
+const int SWITCH_DISPLAYS_ON_OFF_MILLIS = 1000;
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -87,7 +102,7 @@ ClockDisplayController clockDisplayController(
 BCDDecoder decoder(PIN_A, PIN_B, PIN_C, PIN_D);
 
 // We have three different buttons.
-Button modeButton(MODE_BUTTON,100), incrementButton(INCREMENT_BUTTON,100), alarmButton(ALARM_BUTTON,100);
+Button modeButton(MODE_BUTTON,100), actionButton(ACTION_BUTTON,100), alarmButton(ALARM_BUTTON,100);
 
 
 Hour hour, alarmHour;
@@ -108,6 +123,10 @@ Mode mode;
 Chrono clockChrono;
 // ledChrono is used to control the led that blinks every second (if enabled).
 Chrono ledChrono; //Controla el parpadeo del led que marca los segundos.
+
+/// TURN THE DISPLAYS ON/OFF ///
+Chrono actionBtnPressedChrono;
+bool actionBtnPressed;
 
 inline void manageAlarm();
 inline void manageInput();
@@ -140,6 +159,9 @@ void loop() {
 }
 
 inline void manageInput(){
+  ////////////////////////////////////////////////
+  ////         HANDLE MODE BUTTON             ////
+  ////////////////////////////////////////////////
   // button.update() returns true when the state of the button
   // changes (from pressed to released or vice versa)
   if (modeButton.update()){
@@ -179,8 +201,11 @@ inline void manageInput(){
     }
   }
   
-  if (incrementButton.update()){
-    if (incrementButton.isPressed()){
+  ////////////////////////////////////////////////
+  ////         HANDLE ACTION BUTTON           ////
+  ////////////////////////////////////////////////
+  if (actionButton.update()){
+    if (actionButton.isPressed()){
       
       if (mode==Mode::SET_HOUR) {
         hour.add(1);
@@ -194,10 +219,24 @@ inline void manageInput(){
       else if (mode==Mode::SET_ALARM_MINUTE){
         alarmMinute.add(1);
       }
+      else {
+          actionBtnPressedChrono.restart();
+      }
       
     }
   }
+
   
+  if (actionButton.isPressed() && !mode.isEditingHour() && !mode.isEditingMinute()) {
+    if (actionBtnPressedChrono.getElapsedTime() > SWITCH_DISPLAYS_ON_OFF_MILLIS) {
+      clockDisplayController.switchDisplay();
+      actionBtnPressedChrono.restart();
+    }
+  }
+  
+  ////////////////////////////////////////////////
+  ////          HANDLE ALARM BUTTON           ////
+  ////////////////////////////////////////////////
   if (alarmButton.update()){
     if (alarmButton.isPressed()){
       // We use the alarm button to:
@@ -258,6 +297,10 @@ inline void updateTime(){
 
     if (alarmOn && hour==alarmHour && minute==alarmMinute && !alarmPlayer.isPlaying()){
       alarmPlayer.play(MELODY_SIZE, NOTES, DURATION, SILENCE, true);
+
+      // When the alarm gets triggered we force the display
+      // to be turned on.
+      clockDisplayController.turnOn();
     }
 
     clockChrono.restart();

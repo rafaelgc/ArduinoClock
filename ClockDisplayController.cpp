@@ -17,6 +17,7 @@ ClockDisplayController::ClockDisplayController(int mostSignificantHourPin, int l
   
   currentPin = lessSignificantMinutePin;
   
+  turnOn();
   setMode(NORMAL);
 }
 
@@ -35,10 +36,10 @@ void ClockDisplayController::update(const TwoDigitNumber &hour, const TwoDigitNu
     updateNumber(hour, minute, decoder);
 
     // Turn the next transistor on.
-    if ((currentPin==mostSignificantHourPin || currentPin==lessSignificantHourPin) && hourOn){
+    if ((currentPin==mostSignificantHourPin || currentPin==lessSignificantHourPin) && hourOn && on){
       digitalWrite(currentPin,HIGH);
     }
-    else if ((currentPin==mostSignificantMinutePin || currentPin==lessSignificantMinutePin) && minuteOn){
+    else if ((currentPin==mostSignificantMinutePin || currentPin==lessSignificantMinutePin) && minuteOn && on){
       digitalWrite(currentPin,HIGH);
     }
 
@@ -100,3 +101,14 @@ void ClockDisplayController::setMode(char mode){
   blinkChrono.restart();
 }
 
+void ClockDisplayController::turnOn() {
+    on = true;
+}
+
+void ClockDisplayController::turnOff() {
+    on = false;
+}
+
+void ClockDisplayController::switchDisplay() {
+    on = !on;
+}

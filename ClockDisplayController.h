@@ -12,6 +12,7 @@ private:
 	Chrono displayChrono, blinkChrono;
 
 	char mode;
+  bool on;
 
 	bool hourOn, minuteOn;
 	inline void manageBlink();
@@ -19,12 +20,16 @@ private:
   int nextPin();
   
 public:
-	static const char NORMAL = 0, HOUR_BLINK = 1, MINUTE_BLINK = 2;
+	static const char NORMAL = 0, HOUR_BLINK = 1, MINUTE_BLINK = 2, OFF = 3;
 
 	ClockDisplayController(int mostSignificantHourPin, int lessSignificantHourPin, int mostSignificantMinutePin, int lessSignificantMinutePin);
 	
 	void update(const TwoDigitNumber &hour, const TwoDigitNumber &minute, BCDDecoder &decoder);
 	void setMode(char mode);
+        
+        void turnOn();
+        void turnOff();
+        void switchDisplay();
 
 };
 
