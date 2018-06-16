@@ -51,8 +51,8 @@ const int ALARM_LED = 13;
 const int SECONDS_LED = 12;
 
 // Pick the alarm melody:
-#define BASIC_MELODY
-//#define MARIO_MELODY
+//#define BASIC_MELODY
+#define MARIO_MELODY
 
 // If you want to turn the displays on/off you'll
 // have to keep the action button pressed for
